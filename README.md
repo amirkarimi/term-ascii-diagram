@@ -1,5 +1,7 @@
 Build ASCII diagrams in terminal using keyboard.
 
+[![asciicast](https://asciinema.org/a/653721.svg)](https://asciinema.org/a/653721)
+
 ## Install
 
 ```
