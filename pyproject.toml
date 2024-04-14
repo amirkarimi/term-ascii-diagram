@@ -1,10 +1,10 @@
 [build-system]
-requires = ["hatchling"]
+requires = ["hatchling", "hatch-vcs"]
 build-backend = "hatchling.build"
 
 [project]
 name = "term-ascii-diagram"
-version = "0.0.4"
+dynamic = ["version"]
 authors = [
   { name="Amir Karimi", email="me@amirkarimi.dev" },
 ]
@@ -25,3 +25,6 @@ Issues = "https://github.com/amirkarimi/term-ascii-diagram/issues"
 
 [project.scripts]
 term-ascii-diagram = "term_ascii_diagram.main:cli"
+
+[tool.hatch.version]
+source = "vcs"

@@ -2,13 +2,14 @@ import argparse
 import curses
 import curses.ascii
 import os
+from typing import Any, Callable
 
 from term_ascii_diagram.diagram import Designer
 from term_ascii_diagram.status_bar import StatusBar
 
 
-def wrapped(args):
-    def main(stdscr: curses.window):
+def wrapped(args: Any) -> Callable[[curses.window], None]:
+    def main(stdscr: curses.window) -> None:
         stdscr.keypad(True)
         max_y, max_x = stdscr.getmaxyx()
 
@@ -43,7 +44,7 @@ def wrapped(args):
     return main
 
 
-def cli():
+def cli() -> None:
     parser = argparse.ArgumentParser(
         prog="term-ascii-diagram",
         description="Terminal ASCII Diagram Builder.",

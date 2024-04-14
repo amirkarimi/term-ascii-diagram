@@ -62,7 +62,7 @@ class StatusBar:
         self.window.resize(1, max_x)
         self.window.mvwin(max_y - 1, 0)
 
-    def invalidate(self):
+    def invalidate(self) -> None:
         _, max_x = self.window.getmaxyx()
         self.window.addstr(0, 0, " " * (max_x - 1), self.bg_color)
         x = 0

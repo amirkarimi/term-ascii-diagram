@@ -1,7 +1,7 @@
 import curses
 from dataclasses import dataclass
 from enum import Enum
-from typing import Optional, Tuple, overload
+from typing import Optional, Tuple, Union, overload
 
 
 @dataclass
@@ -29,8 +29,9 @@ class Point:
     def __sub__(self, other: "Point") -> Size: ...
     @overload
     def __sub__(self, other: Size) -> "Point": ...
-
-    def __sub__(self, other):
+    def __sub__(  # noqa: E301
+        self, other: Union["Point", Size]
+    ) -> Union["Point", Size]:
         if isinstance(other, Point):
             return Size(other.x - self.x, other.y - self.y)
         elif isinstance(other, Size):
@@ -70,7 +71,7 @@ class CursorMode(Enum):
 class Canvas:
     stdscr: curses.window
 
-    def __init__(self, stdscr):
+    def __init__(self, stdscr: curses.window) -> None:
         self.stdscr = stdscr
 
     def getmaxxy(self) -> Tuple[int, int]:

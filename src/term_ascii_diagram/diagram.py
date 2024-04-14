@@ -25,7 +25,7 @@ class DiagramObject:
         self.size = size or Size(6, 3)
 
     @property
-    def normalized_position(self):
+    def normalized_position(self) -> Point:
         x = self.position.x
         y = self.position.y
         if self.size.w < 0:
@@ -35,50 +35,56 @@ class DiagramObject:
         return Point(x, y)
 
     @property
-    def normalized_size(self):
+    def normalized_size(self) -> Size:
         return Size(abs(self.size.w), abs(self.size.h))
 
     @property
-    def top_left(self):
+    def top_left(self) -> Point:
         return self.position
 
     @property
-    def normalized_top_left(self):
+    def normalized_top_left(self) -> Point:
         return self.normalized_position
 
     @property
-    def top_right(self):
+    def top_right(self) -> Point:
         return Point(self.position.x + self.size.w, self.position.y)
 
     @property
-    def normalized_top_right(self):
+    def normalized_top_right(self) -> Point:
         return Point(
             self.normalized_position.x + self.normalized_size.w,
             self.normalized_position.y,
         )
 
     @property
-    def bottom_left(self):
+    def bottom_left(self) -> Point:
         return Point(self.position.x, self.position.y + self.size.h)
 
     @property
-    def normalized_bottom_left(self):
+    def normalized_bottom_left(self) -> Point:
         return Point(
             self.normalized_position.x,
             self.normalized_position.y + self.normalized_size.h,
         )
 
     @property
-    def bottom_right(self):
+    def bottom_right(self) -> Point:
         return self.position + self.size
 
     @property
-    def normalized_bottom_right(self):
+    def normalized_bottom_right(self) -> Point:
         return self.normalized_position + self.normalized_size
 
-    def draw(self, canvas: Canvas):
+    def draw(self, canvas: Canvas) -> None:
         """Draw the object on the canvas."""
         raise NotImplementedError("DiagramObject should not be used directly")
+
+    def toggle(self) -> None:
+        """Toggle the object main attribute.
+
+        For example change the line orientation."""
+        pass
 
     def serialize(self) -> Dict[str, Any]:
         return {
@@ -112,7 +118,7 @@ class Box(DiagramObject):
     def toggle(self) -> None:
         self.show_border = not self.show_border
 
-    def draw(self, canvas: Canvas):
+    def draw(self, canvas: Canvas) -> None:
         if self.show_border:
             canvas.fill(self.top_left, self.top_right, Ascii.H_LINE)
             canvas.fill(self.bottom_left, self.bottom_right, Ascii.H_LINE)
@@ -150,7 +156,7 @@ class Box(DiagramObject):
         self.text = data["text"]
         self.show_border = data["show_border"]
 
-    def edit(self, canvas: Canvas):
+    def edit(self, canvas: Canvas) -> None:
         buf = []
         for y in range(1, self.size.h):
             for x in range(1, self.size.w):
@@ -215,7 +221,7 @@ class Line(DiagramObject):
         self.orientation = orientation or Line.Orientation.HORIZONTAL
         self.is_arrow = is_arrow
 
-    def toggle(self):
+    def toggle(self) -> None:
         """Toggle the line starting orientation."""
         self.orientation = (
             Line.Orientation.HORIZONTAL
@@ -321,7 +327,7 @@ class Designer:
     selected_object_index: int
     cursor: Point
     cursor_mode: CursorMode
-    key_bindings: Dict[int, Callable]
+    key_bindings: Dict[int, Callable[[], None]]
     sticky_mode: bool
 
     def __init__(
@@ -351,7 +357,7 @@ class Designer:
         self.sticky_mode = True
 
     @property
-    def selected_object(self):
+    def selected_object(self) -> Optional[DiagramObject]:
         if 0 <= self.selected_object_index < len(self.objects):
             return self.objects[self.selected_object_index]
         return None
@@ -359,7 +365,7 @@ class Designer:
     def _find_lines(self) -> Iterable[Line]:
         for obj in self.objects:
             if isinstance(obj, Line):
-                yield cast(Line, obj)
+                yield obj
 
     def _get_connected_lines(self) -> Tuple[List[Line], List[Line]]:
         starting_connected_lines: List[Line] = []
@@ -413,12 +419,12 @@ class Designer:
             if 0 <= self.cursor.y + dy < max_y:
                 self.cursor.y += dy
 
-    def _on_cursor_move_resize(self, dx: int, dy: int):
+    def _on_cursor_move_resize(self, dx: int, dy: int) -> None:
         if self.selected_object:
             self.selected_object.size.w += dx
             self.selected_object.size.h += dy
 
-    def _on_switch_object(self, reverse: bool):
+    def _on_switch_object(self, reverse: bool) -> None:
         next_cursor_mode = CursorMode.MOVE
 
         # Rotate selection
@@ -523,7 +529,7 @@ class Designer:
                 self.selected_object.edit(self.canvas)
 
     def _toggle_object(self) -> None:
-        if hasattr(self.selected_object, "toggle"):
+        if self.selected_object:
             self.selected_object.toggle()
 
     def _toggle_sticky_mode(self) -> None:
@@ -552,7 +558,7 @@ class Designer:
     # End of commands
     ##################
 
-    def _get_key_bindings(self) -> Dict[int, Callable]:
+    def _get_key_bindings(self) -> Dict[int, Callable[[], None]]:
         move_up = lambda: self._on_cursor_move(0, -1)  # noqa: E731
         move_down = lambda: self._on_cursor_move(0, 1)  # noqa: E731
         move_left = lambda: self._on_cursor_move(-1, 0)  # noqa: E731
@@ -611,7 +617,7 @@ class Designer:
         )
         return chr(res).lower() == "y"
 
-    def loop(self):
+    def loop(self) -> None:
         while True:
             try:
                 self.canvas.clear()
